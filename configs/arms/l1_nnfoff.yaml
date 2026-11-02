@@ -1,0 +1,18 @@
+# Table 2: L1, pretrained, nnF recipe
+# nnFoundationCNN encoder copied over the common init, L1 only, official nnFoundationCNN fine-tuning schedule
+# (lr 1e-3, 15-epoch warm-up, PolyLR to 300).
+extends: ../common.yaml
+run_name: l1_nnfoff
+trainer: sgd
+schedule:
+  peak_lr: 1.0e-3
+  warmup_epochs: 15
+train:
+  snapshots: [0, 1, 2, 5, 10, 15, 25, 50, 75, 100, 150, 200, 250, 300]
+init:
+  seed: 20261018
+  file: ${ISBI_INITS}/generator_init.pth     # optional; redrawn from the seed when ISBI_INITS is unset
+  nnf_encoder: true
+paper:
+  checkpoint_epoch: 300
+  label: "L1, pretrained, nnF recipe"

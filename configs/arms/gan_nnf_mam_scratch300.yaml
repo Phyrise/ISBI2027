@@ -1,0 +1,52 @@
+# Table 2: GAN L1 + AFP_seg, pretrained (nnF encoder), Adam recipe
+# As gan_nnf with the scratch-expert AFP: 100 (L1 + lambda AFP) + LSGAN + 10 FM.
+extends: ../common.yaml
+run_name: gan_nnf_mam_scratch300
+trainer: adam_gan
+epochs: 200
+optimizer:
+  _replace: true
+  name: adam
+  betas: [0.5, 0.999]
+  weight_decay: 0.0
+  clip: null
+  grad_scaler_init: 128.0
+schedule:
+  _replace: true
+  name: constant_then_linear   # per update: 2e-4 for 100 epochs, then linear to 0 at epoch 200
+  lr: 2.0e-4
+  constant_epochs: 100
+  horizon: 200
+discriminator:
+  width: 64
+  scales: 2
+  layers: 3
+  init:
+    seed: 20261022
+    file: ${ISBI_INITS}/discriminator_init_r11.pth
+train:
+  snapshots: [0, 1, 10, 25, 50, 100, 150, 200]
+precision:
+  generator_autocast: bfloat16
+  train_autocast: float16      # loss, teacher and discriminator
+  inference_autocast: bfloat16
+init:
+  seed: 20261018
+  file: ${ISBI_INITS}/generator_init.pth     # optional; redrawn from the seed when ISBI_INITS is unset
+  nnf_encoder: true
+teacher:
+  kind: expert               # frozen lesion expert trained from scratch (configs/experts/scratch.yaml), encoder only
+  checkpoint: ${ISBI_RUNS}/expert_scratch_c300/checkpoint_ep300.pth
+  reference_sha256: b1752b0acc93f8c14403ee2d1292db09936b13fa068c3c399b3dcfbe10fb12af
+  features: encoder
+  dtype: float16
+loss:
+  lambda: 0.12640548798445048
+  dose_file: configs/doses/mam_scratch300.json
+  dose_reused_from: mam_scratch300   # not recalibrated for this arm
+  pixel_weight: 100.0
+  adversarial_weight: 1.0
+  fm_weight: 10.0
+paper:
+  checkpoint_epoch: 200
+  label: "GAN: L1 + AFP_seg, pretrained, Adam"

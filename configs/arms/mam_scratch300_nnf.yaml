@@ -1,0 +1,22 @@
+# L1 + AFP_seg, pretrained (nnF encoder), common recipe (quoted in the text, not a Table 2 row)
+# nnFoundationCNN encoder copied over the common init, scratch-expert AFP teacher, common SGD schedule (lr 1e-2).
+extends: ../common.yaml
+run_name: mam_scratch300_nnf
+trainer: sgd
+init:
+  seed: 20261018
+  file: ${ISBI_INITS}/generator_init.pth     # optional; redrawn from the seed when ISBI_INITS is unset
+  nnf_encoder: true
+teacher:
+  kind: expert               # frozen lesion expert trained from scratch (configs/experts/scratch.yaml), encoder only
+  checkpoint: ${ISBI_RUNS}/expert_scratch_c300/checkpoint_ep300.pth
+  reference_sha256: b1752b0acc93f8c14403ee2d1292db09936b13fa068c3c399b3dcfbe10fb12af
+  features: encoder
+  dtype: float16
+loss:
+  lambda: 0.12640548798445048
+  dose_file: configs/doses/mam_scratch300.json
+  dose_reused_from: mam_scratch300   # not recalibrated for this arm
+paper:
+  checkpoint_epoch: 300
+  label: "L1 + AFP_seg, pretrained, common recipe"

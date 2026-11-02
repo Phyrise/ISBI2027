@@ -1,0 +1,19 @@
+# Table 2: L1 + perceptual SAM 2.1 (2D slices), from scratch, common recipe
+# Frozen SAM 2.1 Hiera-S trunk on seeded axial slices.
+extends: ../common.yaml
+run_name: sam
+trainer: sgd
+init:
+  seed: 20261018
+  file: ${ISBI_INITS}/generator_init.pth     # optional; redrawn from the seed when ISBI_INITS is unset
+  nnf_encoder: false
+teacher:
+  kind: sam                  # SAM 2.1 Hiera-S trunk on 32 seeded axial slices, stages weighted 0,1,1,0
+  checkpoint: ${ISBI_WEIGHTS}/authors_SAM2.1_Small.pt
+  reference_sha256: b241bdcbc11ef5e39be3c4ef22e8a26a915eecce572ac3fce7f94feb2d84d761
+loss:
+  lambda: 2.15001416323105
+  dose_file: configs/doses/sam.json
+paper:
+  checkpoint_epoch: 300
+  label: "L1 + perc. SAM 2.1, scratch, common recipe"

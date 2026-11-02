@@ -1,0 +1,22 @@
+# Table 2: L1 + perceptual VGG16 (2D slices), from scratch, common recipe
+# Frozen VGG16 on seeded axial slices.
+extends: ../common.yaml
+run_name: vgg
+trainer: sgd
+init:
+  seed: 20261018
+  file: ${ISBI_INITS}/generator_init.pth     # optional; redrawn from the seed when ISBI_INITS is unset
+  nnf_encoder: false
+teacher:
+  kind: vgg                  # VGG16 relu1_2-4_3 on 32 seeded axial slices, weights 1,1,1,1
+  checkpoint: ${ISBI_WEIGHTS}/authors_VGG16.pt
+  reference_sha256: 8ba626577d0c95c494caef4d747f00e2551037c9f0157639afeb6afe7c590c92
+loss:
+  lambda: 1.0366426203725314
+  dose_file: configs/doses/vgg.json
+precision:
+  train_autocast: float16
+  inference_autocast: bfloat16 # float16 inference overflowed (NaN tile) for this checkpoint; trained in fp16
+paper:
+  checkpoint_epoch: 300
+  label: "L1 + perc. VGG16, scratch, common recipe"

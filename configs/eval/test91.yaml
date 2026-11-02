@@ -1,0 +1,68 @@
+# test91 evaluation: the 91 official MAMA-MIA DUKE test patients, read by every stage of scripts/eval_test91.sh.
+#
+# Paths are never written here. They come from environment variables (see scripts/eval_test91.sh):
+#   ISBI_DATA_TEST    prepared test cases: <case>/{data.npy, body.npy, label.npy, properties.json}
+#                     (data.npy[0] = pre-contrast, data.npy[1] = post-contrast, both z-scored with the
+#                      pre-contrast statistics; 1.0 x 0.7 x 0.7 mm, D/H/W)
+#   ISBI_EVAL_OUT     root of every evaluation output (one folder per stage, then <entry>/<case>.json)
+#   ISBI_MANIFEST     split manifest (patients and native NIfTI paths for the reader)
+#   ISBI_READER_DIR   MAMA-MIA nnU-Net release folder (Dataset105_full_image 3d_fullres, 5 folds)
+#   ISBI_MEDDINO_CKPT / ISBI_MEDDINO_REPO   MedDINOv3 checkpoint and code (ricklisz/MedDINOv3)
+#   ISBI_NNF_VIT_DIR  nnFoundationViT folder (checkpoint_final.pth, PROVENANCE.json)
+#
+# An "entry" is what a stage reads as the synthetic volume: an arm at its final epoch
+# ("<key>_ep<epoch>"), the pre-contrast copy ("pre"), or the real post-contrast ("real", identity control).
+
+split: test
+n_cases: 91
+
+# Output folder of each stage, relative to ISBI_EVAL_OUT.
+stages:
+  image: image            # MAE, SSIM, lesion metrics (computed by the gen stage on the float32 prediction)
+  pred: pred              # float16 predictions written by the gen stage (<entry>/<case>.npy), input of every later stage
+  psnr: psnr
+  offtarget: offtarget
+  reader: reader
+  sharpness: sharpness
+  lpips: lpips
+  meddino: meddino
+  nnf_vit: nnf_vit
+
+# Table 2 rows, in order (the ranked models). autocast = generator inference precision on test91.
+# ResUNet rows use the nnF recipe whenever it was trained (it matched or beat the common recipe on dev40);
+# the generic extractors and AFP_seg-ft-nnF were trained with the common recipe only.
+arms:
+  - {key: l1_off,                  epoch: 300, autocast: float16,  group: "ResUNet, SGD", pretrained: false, recipe: nnF,    label: "L1",                    latex: "L1"}
+  - {key: l1_nnfoff,               epoch: 300, autocast: float16,  group: "ResUNet, SGD", pretrained: true,  recipe: nnF,    label: "L1",                    latex: "L1"}
+  - {key: mam_scratch300_off,      epoch: 300, autocast: float16,  group: "ResUNet, SGD", pretrained: false, recipe: nnF,    label: "L1+AFP_seg",            latex: "L1+\\afp{seg}"}
+  - {key: mam_scratch300_nnfoff,   epoch: 300, autocast: float16,  group: "ResUNet, SGD", pretrained: true,  recipe: nnF,    label: "L1+AFP_seg",            latex: "L1+\\afp{seg}"}
+  - {key: ssl_off,                 epoch: 300, autocast: float16,  group: "ResUNet, SGD", pretrained: false, recipe: nnF,    label: "L1+feat. nnF",          latex: "L1+\\fnnf{}"}
+  - {key: mam300,                  epoch: 300, autocast: float16,  group: "ResUNet, SGD", pretrained: false, recipe: common, label: "L1+AFP_seg-ft-nnF",     latex: "L1+\\afpft{}"}
+  - {key: sam,                     epoch: 300, autocast: float16,  group: "ResUNet, SGD", pretrained: false, recipe: common, label: "L1+perc. SAM 2.1",      latex: "L1+perc.\\ SAM\\,2.1"}
+  - {key: vgg,                     epoch: 300, autocast: bfloat16, group: "ResUNet, SGD", pretrained: false, recipe: common, label: "L1+perc. VGG16",        latex: "L1+perc.\\ VGG16"}
+  - {key: mednet,                  epoch: 300, autocast: bfloat16, group: "ResUNet, SGD", pretrained: false, recipe: common, label: "L1+perc. MedicalNet",   latex: "L1+perc.\\ MedicalNet"}
+  - {key: swin_l1,                 epoch: 250, autocast: bfloat16, group: "Other architectures (Adam)", pretrained: false, recipe: Adam, label: "SwinUNETR: L1",         latex: "SwinUNETR: L1"}
+  - {key: swin_mam_scratch300,     epoch: 250, autocast: bfloat16, group: "Other architectures (Adam)", pretrained: false, recipe: Adam, label: "SwinUNETR: L1+AFP_seg", latex: "SwinUNETR: L1+\\afp{seg}"}
+  - {key: gan_nnf,                 epoch: 200, autocast: bfloat16, group: "Other architectures (Adam)", pretrained: true,  recipe: Adam, label: "GAN: L1",               latex: "GAN: L1"}
+  - {key: gan_nnf_mam_scratch300,  epoch: 200, autocast: bfloat16, group: "Other architectures (Adam)", pretrained: true,  recipe: Adam, label: "GAN: L1+AFP_seg",       latex: "GAN: L1+\\afp{seg}"}
+
+# Evaluated with the same stages but not Table 2 rows: the common-recipe versions of the nnF-recipe rows, and
+# pretraining combined with the frozen nnF loss (quoted in the text). Collected into the per-patient CSVs only.
+extra_arms:
+  - {key: l1,                      epoch: 300, autocast: float16,  group: "ResUNet, SGD", pretrained: false, recipe: common, label: "L1, common recipe",                 latex: "L1"}
+  - {key: l1_nnf,                  epoch: 300, autocast: float16,  group: "ResUNet, SGD", pretrained: true,  recipe: common, label: "L1, pretrained, common recipe",     latex: "L1"}
+  - {key: mam_scratch300,          epoch: 300, autocast: float16,  group: "ResUNet, SGD", pretrained: false, recipe: common, label: "L1+AFP_seg, common recipe",         latex: "L1+\\afp{seg}"}
+  - {key: mam_scratch300_nnf,      epoch: 300, autocast: float16,  group: "ResUNet, SGD", pretrained: true,  recipe: common, label: "L1+AFP_seg, pretrained, common recipe", latex: "L1+\\afp{seg}"}
+  - {key: ssl,                     epoch: 300, autocast: float16,  group: "ResUNet, SGD", pretrained: false, recipe: common, label: "L1+feat. nnF, common recipe",       latex: "L1+\\fnnf{}"}
+  - {key: ssl_nnf,                 epoch: 300, autocast: float16,  group: "ResUNet, SGD", pretrained: true,  recipe: common, label: "L1+feat. nnF, pretrained, common recipe", latex: "L1+\\fnnf{}"}
+  - {key: ssl_nnfoff,              epoch: 300, autocast: float16,  group: "ResUNet, SGD", pretrained: true,  recipe: nnF,    label: "L1+feat. nnF, pretrained, nnF recipe", latex: "L1+\\fnnf{}"}
+
+# Reference rows: shown in Table 2, never ranked.
+references:
+  - {key: pre,  label: "Pre-contrast copy",  latex: "Pre-contrast copy"}
+  - {key: real, label: "Real post-contrast", latex: "Real post-contrast"}
+
+# Group headers of Table 2 (LaTeX), in order.
+groups_latex:
+  "ResUNet, SGD": "\\emph{ResUNet, SGD}"
+  "Other architectures (Adam)": "\\emph{Other architectures (Adam)}"

@@ -1,0 +1,36 @@
+# Table 2: SwinUNETR L1, from scratch, Adam recipe
+# SwinUNETR, common random Swin init, Adam recipe.
+extends: ../common.yaml
+run_name: swin_l1
+trainer: adam_gan
+epochs: 250
+optimizer:
+  _replace: true
+  name: adam
+  betas: [0.9, 0.999]
+  weight_decay: 0.0
+  clip: 12.0
+  grad_scaler_init: 4096.0
+schedule:
+  _replace: true
+  name: constant_then_linear   # per update: 1e-3 for 167 epochs, then linear to 0 at epoch 250
+  lr: 1.0e-3
+  constant_epochs: 167
+  horizon: 250
+train:
+  snapshots: [0, 1, 10, 25, 50, 100, 150, 200, 250]
+precision:
+  generator_autocast: bfloat16
+  train_autocast: float16      # loss, teacher
+  inference_autocast: bfloat16
+architecture:
+  name: swinunetr
+  feature_size: 24
+  use_checkpoint: true
+init:
+  seed: 20261018
+  file: ${ISBI_INITS}/generator_init_swin_r11.pth
+  nnf_encoder: false
+paper:
+  checkpoint_epoch: 250
+  label: "SwinUNETR: L1, scratch, Adam"

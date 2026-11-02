@@ -1,0 +1,12 @@
+# L1, from scratch, common recipe (recipe check; Table 2 uses l1_off)
+# SGD trainer, common random init, L1 only.
+extends: ../common.yaml
+run_name: l1
+trainer: sgd
+init:
+  seed: 20261018
+  file: ${ISBI_INITS}/generator_init.pth     # optional; redrawn from the seed when ISBI_INITS is unset
+  nnf_encoder: false
+paper:
+  checkpoint_epoch: 300
+  label: "L1, scratch, common recipe"

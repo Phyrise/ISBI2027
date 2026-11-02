@@ -1,0 +1,21 @@
+# Table 2: L1 + AFP_seg-ft-nnF, from scratch, common recipe
+# AFP teacher = the lesion expert nnF -> fine-tuned (ep300, gate passed).
+extends: ../common.yaml
+run_name: mam300
+trainer: sgd
+init:
+  seed: 20261018
+  file: ${ISBI_INITS}/generator_init.pth     # optional; redrawn from the seed when ISBI_INITS is unset
+  nnf_encoder: false
+teacher:
+  kind: expert               # frozen lesion expert nnF -> fine-tuned (configs/experts/nnf_ft.yaml), encoder only
+  checkpoint: ${ISBI_RUNS}/expert_c300/checkpoint_ep300.pth
+  reference_sha256: 95cbe936672e4b9a3085d0a37e1062eaf7dad5d6a3e8814f8d5a9a8cb7ae6359
+  features: encoder
+  dtype: float16
+loss:
+  lambda: 2.407138232433143
+  dose_file: configs/doses/mam300.json
+paper:
+  checkpoint_epoch: 300
+  label: "L1 + AFP_seg-ft-nnF, scratch, common recipe"

@@ -1,0 +1,32 @@
+# AFP lesion expert: AFP_seg (random init)
+# ResEnc-L (2 classes) trained by the in-house SGD loop with the nnU-Net Dice + CE loss on the z-scored
+# post-contrast patch; NOT a stock nnUNetv2 trainer (no nnU-Net planning or augmentation). Teacher of mam_scratch300, mam_scratch300_nnfoff, swin_mam_scratch300, gan_nnf_mam_scratch300.
+extends: ../common.yaml
+run_name: expert_scratch_c300
+resume_from_run: expert_scratch      # paper: epochs 0-100 ran as 'expert_scratch', then forked (synthesis.trainers.checkpoint fork) and resumed to 300
+task: segmentation
+trainer: sgd
+seed: 20261019
+architecture:
+  name: resenc_l_seg
+init:
+  seed: 20261019               # random ResEnc-L draw (both experts share this random decoder)
+  file: null
+  nnf_encoder: false
+schedule:
+  peak_lr: 1.0e-3
+  warmup_epochs: 15
+  horizon: 300
+precision:
+  train_autocast: float16
+  inference_autocast: float16
+gate:
+  epochs: [100, 300]
+  n_cases: 40
+  min_mean_dice: 0.5
+  max_empty: 4
+paper:
+  checkpoint_epoch: 300
+  label: "AFP_seg (random init)"
+  dev40_mean_dice_ep300: 0.5613796072225783
+  gate_history: "ep100 FAILED (Dice 0.376); continued to 300 as decided before the AFP arms; ep300 passed (Dice 0.561, 0 empty)"

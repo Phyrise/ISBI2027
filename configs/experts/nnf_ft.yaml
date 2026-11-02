@@ -1,0 +1,32 @@
+# AFP lesion expert of AFP_seg-ft-nnF (nnFoundationCNN encoder + random decoder, fine-tuned)
+# ResEnc-L (2 classes) trained by the in-house SGD loop with the nnU-Net Dice + CE loss on the z-scored
+# post-contrast patch; NOT a stock nnUNetv2 trainer (no nnU-Net planning or augmentation). Teacher of mam300.
+extends: ../common.yaml
+run_name: expert_c300
+resume_from_run: expert      # paper: epochs 0-100 ran as 'expert', then forked (synthesis.trainers.checkpoint fork) and resumed to 300
+task: segmentation
+trainer: sgd
+seed: 20261019
+architecture:
+  name: resenc_l_seg
+init:
+  seed: 20261019               # random ResEnc-L draw (both experts share this random decoder)
+  file: null
+  nnf_encoder: true
+schedule:
+  peak_lr: 1.0e-3
+  warmup_epochs: 15
+  horizon: 300
+precision:
+  train_autocast: float16
+  inference_autocast: float16
+gate:
+  epochs: [100, 300]
+  n_cases: 40
+  min_mean_dice: 0.5
+  max_empty: 4
+paper:
+  checkpoint_epoch: 300
+  label: "AFP_seg-ft-nnF expert (nnFoundationCNN encoder + random decoder, fine-tuned)"
+  dev40_mean_dice_ep300: 0.7180816827783184
+  gate_history: "ep100 passed (Dice 0.571); ep300 passed (Dice 0.718, 0 empty)"

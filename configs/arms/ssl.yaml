@@ -1,0 +1,21 @@
+# L1 + feat. nnF (frozen nnFoundationCNN feature loss), from scratch, common recipe (recipe check; Table 2 uses ssl_off)
+# Frozen nnFoundationCNN encoder as AFP teacher.
+extends: ../common.yaml
+run_name: ssl
+trainer: sgd
+init:
+  seed: 20261018
+  file: ${ISBI_INITS}/generator_init.pth     # optional; redrawn from the seed when ISBI_INITS is unset
+  nnf_encoder: false
+teacher:
+  kind: nnf                  # frozen nnFoundationCNN ResEnc-L, encoder features encoder.0-5
+  checkpoint: ${ISBI_WEIGHTS}/nnFoundationCNN/checkpoint_final.pth
+  reference_sha256: ac262d3e8c226c79f9567fddc34d38e011284730ddf2294b5c6c319ce2f22bbd
+  features: encoder
+  dtype: float16             # teacher weights cast to fp16, features compared in fp32
+loss:
+  lambda: 11.775309635186533
+  dose_file: configs/doses/ssl.json
+paper:
+  checkpoint_epoch: 300
+  label: "L1 + feat. nnF, scratch, common recipe"

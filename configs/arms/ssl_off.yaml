@@ -1,0 +1,28 @@
+# Table 2: L1 + feat. nnF (frozen nnFoundationCNN feature loss), from scratch, nnF recipe
+# Common random init, frozen nnFoundationCNN encoder as feature teacher, official nnFoundationCNN fine-tuning schedule
+# (lr 1e-3, 15-epoch warm-up, PolyLR to 300).
+extends: ../common.yaml
+run_name: ssl_off
+trainer: sgd
+schedule:
+  peak_lr: 1.0e-3
+  warmup_epochs: 15
+train:
+  snapshots: [0, 10, 25, 50, 100, 150, 200, 250, 300]
+init:
+  seed: 20261018
+  file: ${ISBI_INITS}/generator_init.pth     # optional; redrawn from the seed when ISBI_INITS is unset
+  nnf_encoder: false
+teacher:
+  kind: nnf                  # frozen nnFoundationCNN ResEnc-L, encoder features encoder.0-5
+  checkpoint: ${ISBI_WEIGHTS}/nnFoundationCNN/checkpoint_final.pth
+  reference_sha256: ac262d3e8c226c79f9567fddc34d38e011284730ddf2294b5c6c319ce2f22bbd
+  features: encoder
+  dtype: float16             # teacher weights cast to fp16, features compared in fp32
+loss:
+  lambda: 11.775309635186533
+  dose_file: configs/doses/ssl.json
+  dose_reused_from: ssl   # not recalibrated for this arm
+paper:
+  checkpoint_epoch: 300
+  label: "L1 + feat. nnF, scratch, nnF recipe"

@@ -1,0 +1,23 @@
+# Table 2: L1 + perceptual MedicalNet (3D), from scratch, common recipe
+# MedicalNet ResNet-50 perceptual teacher.
+extends: ../common.yaml
+run_name: mednet
+trainer: sgd
+init:
+  seed: 20261018
+  file: ${ISBI_INITS}/generator_init.pth     # optional; redrawn from the seed when ISBI_INITS is unset
+  nnf_encoder: false
+teacher:
+  kind: medicalnet           # frozen MedicalNet ResNet-50 (23 datasets), layer4, fp32 inside the teacher
+  checkpoint: ${ISBI_WEIGHTS}/resnet_50_23dataset.pth
+  reference_sha256: ff48a62219073fb977fd3f4ddfb8dc1367f0ec156c8d6f6c37e205bd683a246e
+loss:
+  lambda: 6.52052213528154
+  dose_file: configs/doses/mednet.json
+  dose_note: calibrated with a float16 generator forward; training ran under bfloat16
+precision:
+  train_autocast: bfloat16     # the float16 run diverged at epoch 18 (fp16 overflow); bf16 forward, fp32 teacher
+  inference_autocast: bfloat16
+paper:
+  checkpoint_epoch: 300
+  label: "L1 + perc. MedicalNet, scratch, common recipe"

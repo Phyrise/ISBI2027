@@ -1,0 +1,108 @@
+# Metric families of the paper (Table 1) and the columns of the results table (Table 2).
+#
+# Each metric is one column of per_arm.csv (evaluation/ranking/per_arm.py), aggregated over the 91 test patients from
+# the per-patient CSVs (<per_patient>/<source>.csv).
+#   family     global | lesion | offtarget | perceptual | segmenter
+#   direction  higher | lower | target1 (closest to 1 is best; ranked on |1 - value|)
+#   aggregate  mean | median | pct_gt1 (percentage of patients with value > 1) | ratio_of_sums (numerator / denominator)
+#   table1     true = metric of the paper (Table 1 families, Table 2 column) and part of the rank; false = per_arm.csv only
+#   decimals   printed precision (after `scale`); `percent: true` prints value*100 with a % sign
+#
+# Global {PSNR, MAE, SSIM}; Lesion {MAE, r}; Off-target {FE}; Perceptual {DINO, LPIPS_L, |grad|}; Segmenter {Dice,
+# FP mL}. Rank = equal-weight mean over the five families of the mean normalised position
+# (evaluation/ranking/family_rank.py). The pre-contrast copy and the real image are not ranked.
+families: [global, lesion, offtarget, perceptual, segmenter]
+
+metrics:
+  # ---------------------------------------------------------------- global (body mask)
+  PSNR_body_dB:
+    {family: global, direction: higher, table1: true, header: "PSNR", decimals: 2,
+     source: global, column: PSNR_body_dB, aggregate: mean,
+     note: "R = max - min of the real post-contrast inside the body (paper definition; the fixed R = 20 z PSNR of the earlier table.json is not used)"}
+  MAE_body_z:
+    {family: global, direction: lower, table1: true, header: "MAE", decimals: 3,
+     source: global, column: MAE_body_z, aggregate: mean}
+  SSIM_body:
+    {family: global, direction: higher, table1: true, header: "SSIM", decimals: 3,
+     source: global, column: SSIM_body, aggregate: mean}
+  # ---------------------------------------------------------------- lesion (expert lesion mask)
+  MAE_lesion_z:
+    {family: lesion, direction: lower, table1: true, header: "MAE", decimals: 2,
+     source: lesion, column: MAE_lesion_z, aggregate: mean}
+  r:
+    {family: lesion, direction: higher, table1: true, header: "$r$", decimals: 0, percent: true,
+     source: lesion, numerator: lesion_enhancement_prediction_z, denominator: lesion_enhancement_real_z,
+     aggregate: ratio_of_sums,
+     note: "paper definition: sum over patients of mean_L(pred - pre) / the same sum of mean_L(post - pre)"}
+  r_median:
+    {family: lesion, direction: higher, table1: false, decimals: 0, percent: true,
+     source: lesion, column: r, aggregate: median,
+     note: "per-patient r, median over patients (preliminary draft only)"}
+  r_gt1_pct:
+    {family: lesion, direction: higher, table1: false, decimals: 0,
+     source: lesion, column: r, aggregate: pct_gt1}
+  MAE_ring_z:
+    {family: lesion, direction: lower, table1: false, decimals: 3,
+     source: lesion, column: MAE_ring_z, aggregate: mean}
+  abs_dE_z:
+    {family: lesion, direction: lower, table1: false, decimals: 2,
+     source: lesion, column: abs_error_mean_lesion_enhancement_z, aggregate: mean}
+
+  # ---------------------------------------------------------------- off-target (body minus lesion dilated by 5 voxels)
+  foci_t2:
+    {family: offtarget, direction: lower, table1: true, header: "foci", decimals: 1,
+     source: offtarget, column: t2_FE_foci_ge_0.1ml, aggregate: mean,
+     note: "false-enhancement components >= 0.1 mL per patient, tau = 2 z"}
+  FE_ml_t2:
+    {family: offtarget, direction: lower, table1: false, decimals: 2,
+     source: offtarget, column: t2_FE_ml, aggregate: mean}
+  foci_t3:
+    {family: offtarget, direction: lower, table1: false, decimals: 1,
+     source: offtarget, column: t3_FE_foci_ge_0.1ml, aggregate: mean}
+  FE_ml_t3:
+    {family: offtarget, direction: lower, table1: false, decimals: 2,
+     source: offtarget, column: t3_FE_ml, aggregate: mean}
+
+  # ---------------------------------------------------------------- perceptual
+  MedDINO_448:
+    {family: perceptual, direction: higher, table1: true, header: "DINO", decimals: 3,
+     source: perceptual, column: MedDINO_CS_448_normed, aggregate: mean,
+     note: "MedDINOv3 CLS cosine, whole image, slices resized to 448 x 448"}
+  LPIPS_lesion:
+    {family: perceptual, direction: lower, table1: true, header: "LPIPS$_L$", decimals: 3,
+     source: perceptual, column: LPIPS_lesion, aggregate: mean}
+  edge_ratio:
+    {family: perceptual, direction: target1, table1: true, header: "Edge", decimals: 2,
+     source: perceptual, column: edge_sharpness_ratio, aggregate: mean,
+     note: "printed with an up arrow in Table 1: every mean is below 1, so higher = closer to 1"}
+  MedDINO_240:
+    {family: perceptual, direction: higher, table1: false, decimals: 3,
+     source: perceptual, column: MedDINO_CS_240_normed, aggregate: mean,
+     note: "name kept from the BraTS script (240 x 240 slices there); no resize is applied, slices keep their native size"}
+  LPIPS_body:
+    {family: perceptual, direction: lower, table1: false, decimals: 3,
+     source: perceptual, column: LPIPS_body, aggregate: mean}
+  body_gradient_ratio:
+    {family: perceptual, direction: target1, table1: false, decimals: 3,
+     source: perceptual, column: body_gradient_ratio, aggregate: mean}
+  hf_energy_ratio:
+    {family: perceptual, direction: target1, table1: false, decimals: 3,
+     source: perceptual, column: hf_energy_ratio_body, aggregate: mean}
+  vit_body:
+    {family: perceptual, direction: lower, table1: false, decimals: 3,
+     source: perceptual, column: vit_body, aggregate: mean}
+  vit_lesion:
+    {family: perceptual, direction: lower, table1: false, decimals: 3,
+     source: perceptual, column: vit_lesion, aggregate: mean}
+
+  # ---------------------------------------------------------------- segmenter (MAMA-MIA nnU-Net, native geometry)
+  Dice:
+    {family: segmenter, direction: higher, table1: true, header: "Dice", decimals: 3,
+     source: segmenter, column: Dice, aggregate: mean}
+  FP_ml:
+    {family: segmenter, direction: lower, table1: true, header: "FP mL", decimals: 2,
+     source: segmenter, column: false_positive_volume_ml, aggregate: mean}
+  HD95_median_mm:
+    {family: segmenter, direction: lower, table1: false, decimals: 1,
+     source: segmenter, column: HD95_mm, aggregate: median,
+     note: "not used in the paper: the reader predicts small distant components even on real images"}

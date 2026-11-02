@@ -1,0 +1,12 @@
+# L1, pretrained (nnF encoder), common recipe (recipe check; Table 2 uses l1_nnfoff)
+# Common random init with the nnFoundationCNN encoder copied over it.
+extends: ../common.yaml
+run_name: l1_nnf
+trainer: sgd
+init:
+  seed: 20261018
+  file: ${ISBI_INITS}/generator_init.pth     # optional; redrawn from the seed when ISBI_INITS is unset
+  nnf_encoder: true
+paper:
+  checkpoint_epoch: 300
+  label: "L1, pretrained, common recipe"

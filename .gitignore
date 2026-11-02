@@ -1,0 +1,28 @@
+__pycache__/
+*.pyc
+*.pth
+*.pt
+*.npy
+*.npz
+*.nii
+*.nii.gz
+.venv/
+outputs/
+
+# Local configuration and credentials
+.env
+.env.*
+!.env.example
+scripts/env.sh
+*.pem
+*.key
+
+# External artifacts and backup archives
+weights/
+checkpoints/
+datasets/
+*.ckpt
+*.safetensors
+*.bundle
+*.tar.gz
+*.zip

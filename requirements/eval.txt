@@ -1,0 +1,23 @@
+# Evaluation environment (every stage of scripts/eval_test91.sh except `gen`, which runs in the training environment).
+# Versions = the environments the paper numbers were computed with (Python 3.10.15, CUDA 12.8 wheels of torch).
+# Only what the code under metrics/, ranking/ and scripts/ imports.
+
+numpy==2.2.6            # everything
+scipy==1.15.3           # ndimage (masks, distances, components, LoG), rankdata
+scikit-image==0.25.2    # SSIM (evaluation/metrics/global_/image.py)
+nibabel==5.3.2          # NIfTI round trip of MedDINOv3 and of the reader
+SimpleITK==2.5.2        # reader: resampling onto the native geometry, native masks
+PyYAML==6.0.3           # configs/eval/*.yaml
+
+torch==2.8.0            # LPIPS, MedDINOv3, nnFoundationViT, reader
+torchvision==0.23.0     # MedDINOv3 resize / normalisation, VGG16 backbone of LPIPS
+lpips==0.1.4            # evaluation/metrics/perceptual/lpips_slices.py (v0.1 linear weights ship with the package)
+einops==0.8.1           # evaluation/metrics/perceptual/nnf_vit.py
+timm==1.0.20            # EVA blocks of the Primus encoder
+dynamic-network-architectures==0.4.2   # Primus (nnFoundationViT encoder); stock PyPI release
+
+# Reader: STOCK nnunetv2. The modified nnU-Net of the training side (Phyrise/nnUNet_translation) must not be importable
+# in this environment: its preprocessing differs (crop_to_nonzero) and changes the reader's input.
+nnunetv2==2.6.2
+
+# Not on PyPI: MedDINOv3 code (github.com/ricklisz/MedDINOv3 @ a2460c2), passed with --repo / ISBI_MEDDINO_REPO.

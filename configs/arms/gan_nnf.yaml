@@ -1,0 +1,44 @@
+# Table 2: GAN L1, pretrained (nnF encoder), Adam recipe
+# ResUNet generator <- nnF encoder + two-scale 3D PatchGAN; 100 L1 + LSGAN + 10 FM.
+extends: ../common.yaml
+run_name: gan_nnf
+trainer: adam_gan
+epochs: 200
+optimizer:
+  _replace: true
+  name: adam
+  betas: [0.5, 0.999]
+  weight_decay: 0.0
+  clip: null
+  grad_scaler_init: 128.0
+schedule:
+  _replace: true
+  name: constant_then_linear   # per update: 2e-4 for 100 epochs, then linear to 0 at epoch 200
+  lr: 2.0e-4
+  constant_epochs: 100
+  horizon: 200
+discriminator:
+  width: 64
+  scales: 2
+  layers: 3
+  init:
+    seed: 20261022
+    file: ${ISBI_INITS}/discriminator_init_r11.pth
+train:
+  snapshots: [0, 1, 10, 25, 50, 100, 150, 200]
+precision:
+  generator_autocast: bfloat16
+  train_autocast: float16      # loss, teacher and discriminator
+  inference_autocast: bfloat16
+init:
+  seed: 20261018
+  file: ${ISBI_INITS}/generator_init.pth     # optional; redrawn from the seed when ISBI_INITS is unset
+  nnf_encoder: true
+loss:
+  lambda: null
+  pixel_weight: 100.0
+  adversarial_weight: 1.0
+  fm_weight: 10.0
+paper:
+  checkpoint_epoch: 200
+  label: "GAN: L1, pretrained, Adam"

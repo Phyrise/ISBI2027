@@ -1,0 +1,34 @@
+# Paired contrasts behind the daggers of Table 2: each model against the first L1 row of its architecture
+# (common-recipe rows against the nnF-recipe L1), mean difference A - B [95 % patient-bootstrap CI].
+# Every cell draws from a fresh default_rng(seed) (reseed); r is the difference of the ratios of sums. A dagger marks
+# a CI that excludes 0 in the better direction of the metric (bootstrap.py table2 --style dagger).
+seed: 20261029
+draws: 5000
+reseed: true
+r_statistic: ratio_of_sums
+min_n: 80          # fewer paired patients -> \pend, no draw consumed
+
+metrics:
+  - {name: PSNR_body_dB, decimals: 2, better: higher, header: "$\\Delta$ PSNR"}
+  - {name: MAE_body_z,   decimals: 3, better: lower,  header: "$\\Delta$ MAE"}
+  - {name: SSIM_body,    decimals: 3, better: higher, header: "$\\Delta$ SSIM"}
+  - {name: MAE_lesion_z, decimals: 2, better: lower,  header: "$\\Delta$ MAE les."}
+  - {name: r,            decimals: 3, better: higher, header: "$\\Delta r$"}
+  - {name: foci,         decimals: 1, better: lower,  header: "$\\Delta$ FE"}
+  - {name: DINO,         decimals: 3, better: higher, header: "$\\Delta$ DINO"}
+  - {name: LPIPS_lesion, decimals: 3, better: lower,  header: "$\\Delta$ LPIPS$_L$"}
+  - {name: edge_ratio,   decimals: 2, better: higher, header: "$\\Delta |\\nabla|$"}
+  - {name: Dice,         decimals: 3, better: higher, header: "$\\Delta$ Dice"}
+  - {name: FP_ml,        decimals: 2, better: lower,  header: "$\\Delta$ FP mL"}
+
+rows:
+  - {a: l1_nnfoff,              b: l1_off,  latex: "L1, pretrained"}
+  - {a: mam_scratch300_off,     b: l1_off,  latex: "L1+\\afp{seg}"}
+  - {a: mam_scratch300_nnfoff,  b: l1_off,  latex: "L1+\\afp{seg}, pretrained"}
+  - {a: ssl_off,                b: l1_off,  latex: "L1+\\fnnf{}"}
+  - {a: mam300,                 b: l1_off,  latex: "L1+\\afpft{}"}
+  - {a: sam,                    b: l1_off,  latex: "L1+perc.\\ SAM\\,2.1"}
+  - {a: vgg,                    b: l1_off,  latex: "L1+perc.\\ VGG16"}
+  - {a: mednet,                 b: l1_off,  latex: "L1+perc.\\ MedicalNet"}
+  - {a: swin_mam_scratch300,    b: swin_l1, latex: "SwinUNETR: L1+\\afp{seg}"}
+  - {a: gan_nnf_mam_scratch300, b: gan_nnf, latex: "GAN: L1+\\afp{seg}"}

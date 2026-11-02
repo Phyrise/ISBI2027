@@ -1,0 +1,76 @@
+# Common recipe shared by every arm and expert (paper values). Arms and experts override what differs.
+#
+# Paths come from the environment (scripts/env.example.sh):
+#   ISBI_DATA     preprocessed train/dev cases (synthesis.data.preprocess output)
+#   ISBI_RUNS     run directories (checkpoints, logs); the AFP teachers read the experts' checkpoints from here
+#   ISBI_WEIGHTS  external weights: nnFoundationCNN/checkpoint_final.pth, resnet_50_23dataset.pth,
+#                 authors_SAM2.1_Small.pt, authors_VGG16.pt (not redistributed, see docs/recipes.md)
+#   ISBI_INITS    optional folder with the paper's common-init files; when unset the inits are redrawn from their seeds
+task: synthesis              # synthesis | segmentation
+seed: 20261018               # run seed: seeding before the network is built, sampler seed, validation seed + 999
+epochs: 300
+
+data:
+  spacing_dhw_mm: [1.0, 0.7, 0.7]
+  patch_dhw: [96, 160, 160]
+  batch_size: 2
+  lesion_centred_fraction: 0.33
+  augmentation: paired axis mirrors only (p = 0.5 per axis)
+
+train:
+  steps_per_epoch: 250
+  val_batches: 20
+  val_seed_offset: 999
+  snapshots: [0, 10, 25, 50, 100, 200, 300]
+  amp_skip_limit: max(2, 5 % of the epoch's updates) -> stop
+
+architecture:
+  name: resunet
+  config: null               # default: configs/architectures/resunet.json
+
+init:
+  seed: 20261018             # common random ResUNet init (paper file generator_init.pth)
+  file: null
+  nnf_encoder: false
+
+optimizer:
+  name: sgd
+  momentum: 0.99
+  nesterov: true
+  weight_decay: 3.0e-5
+  clip: 12.0
+  grad_scaler_init: 4096.0
+
+schedule:
+  name: poly_warmup          # per epoch
+  peak_lr: 1.0e-2
+  warmup_epochs: 5
+  horizon: 300
+  exponent: 0.9
+
+loss:
+  lambda: null               # weight of the feature term; null = L1 only
+
+teacher: null
+
+precision:
+  train_autocast: float16    # autocast of the forward pass (generator, loss and teacher)
+  inference_autocast: float16
+
+calibration:
+  batches: 64
+  seed: 2026101801
+  autocast: float16
+  generator_autocast: null
+
+paper:
+  checkpoint_epoch: 300      # checkpoint read for every number in the paper
+
+paths:
+  data_dir: ${ISBI_DATA}
+  runs_dir: ${ISBI_RUNS}
+  split: ${ISBI_REPO}/configs/split_duke.json
+  nnf_checkpoint: ${ISBI_WEIGHTS}/nnFoundationCNN/checkpoint_final.pth
+  medicalnet_checkpoint: ${ISBI_WEIGHTS}/resnet_50_23dataset.pth
+  sam_torchscript: ${ISBI_WEIGHTS}/authors_SAM2.1_Small.pt
+  vgg_torchscript: ${ISBI_WEIGHTS}/authors_VGG16.pt
