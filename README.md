@@ -39,7 +39,7 @@ Best in **bold**, second <ins>underlined</ins>. Model names link to their config
 | [L1 + perc. SAM 2.1](configs/arms/sam.yaml) | – | 9 | 29.33 | 3.47 | 34% | <ins>10.5</ins>† | **0.842**† | 0.309 |
 | [L1 + perc. VGG16](configs/arms/vgg.yaml) | – | 12 | 28.87 | 4.09 | 17% | **6.5**† | 0.708 | 0.257 |
 | [L1 + perc. MedicalNet](configs/arms/mednet.yaml) | – | 13 | 27.33 | 3.62 | 32% | 18.2 | 0.803† | 0.246 |
-| ***SwinUNETR and GAN · Adam*** | | | | | | | | |
+| ***SwinUNETR, GAN · Adam*** | | | | | | | | |
 | [SwinUNETR: L1](configs/arms/swin_l1.yaml) | – | 11 | 29.75 | 3.31 | 44% | 10.9 | 0.751 | 0.294 |
 | [SwinUNETR: L1 + AFP_seg](configs/arms/swin_mam_scratch300.yaml) | – | 10 | 29.16 | 3.15† | 46% | 17.5 | <ins>0.824</ins>† | 0.340† |
 | [GAN: L1](configs/arms/gan_nnf.yaml) | ✓ | 6 | 29.65 | <ins>3.02</ins> | 49% | 22.9 | 0.757 | 0.350 |
@@ -68,7 +68,7 @@ one training seed).
 | L1 + perc. SAM 2.1 | – | 9 | 29.33 | 0.504 | 0.637 | 3.47 | 34% | <ins>10.5</ins>† | **0.842**† | 0.415 | 0.48 | 0.309 | 14.65 |
 | L1 + perc. VGG16 | – | 12 | 28.87 | 0.517 | 0.630 | 4.09 | 17% | **6.5**† | 0.708 | 0.471 | 0.37 | 0.257 | 18.35 |
 | L1 + perc. MedicalNet | – | 13 | 27.33 | 0.614 | 0.586 | 3.62 | 32% | 18.2 | 0.803† | 0.440 | 0.43 | 0.246 | 15.50 |
-| ***SwinUNETR and GAN · Adam*** | | | | | | | | | | | | | |
+| ***SwinUNETR, GAN · Adam*** | | | | | | | | | | | | | |
 | SwinUNETR: L1 | – | 11 | 29.75 | 0.474 | 0.658 | 3.31 | 44% | 10.9 | 0.751 | 0.416 | 0.48 | 0.294 | 15.43 |
 | SwinUNETR: L1 + AFP_seg | – | 10 | 29.16 | 0.507 | 0.635 | 3.15† | 46% | 17.5 | <ins>0.824</ins>† | 0.405† | 0.58† | 0.340† | 14.00 |
 | GAN: L1 | ✓ | 6 | 29.65 | 0.480 | 0.655 | <ins>3.02</ins> | 49% | 22.9 | 0.757 | 0.393 | 0.53 | 0.350 | <ins>12.29</ins> |
